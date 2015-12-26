@@ -56,7 +56,7 @@ class Page(object):
         #                   references, \
         #                 vetted, format}
         self.id = id
-        attributes
+
         url = (
             "http://eol.org/api/pages/1.0/{0}.json?images={1}&videos={2}&sounds={3}"
             "&maps={4}&text={5}&iucn={6}&subjects={7}&licenses={8}&details={9}&common_names={10}"
@@ -108,7 +108,7 @@ class Search(object):
         else:
             self.results = []
             for page in range(1,math.ceil(self.total_results/30)+1):
-                print("pinging api")
+                print("pinging page {}".format(page))
                 attributes = [q,page,API._bool_converter(exact),filter_by_taxon_concept_id, filter_by_hierarchy_entry_id, filter_by_string,cache_ttl ]
                 url = (
                 "http://eol.org/api/search/1.0.json?q={0}&page={1}&exact={2}&filter_by_taxon_concept_id={3}"
@@ -124,10 +124,27 @@ class Search(object):
                 # except Exception:
                 #     print("You got an exception!"   )
 
-# class Collections(object):
-#     '''Returns all metadata about the collection and the items it contains'''
+class Collections(object):
+    '''Returns all metadata about the collection and the items it contains'''
 
-#     def __init__()
+    def __init__(self, id, page = 1, per_page = 50, filter = 'none', sort_by='recently_added', sort_field='', cache_ttl=''):
+
+        attributes = [id,page,per_page,filter, sort_by, sort_field, cache_ttl]
+
+        url = "http://eol.org/api/collections/1.0/176.json?page={}&per_page={}&filter={}&sort_by={}&sort_field={}&cache_ttl={}".format(*attributes)
+
+        collection = API._get_url(url)
+        self.name = collection["name"]
+        self.description = collection["description"]
+        self.created = collection["created"]
+        self.modified = collection["modified"]
+        self.total_items = collection["total_items"]
+        self.item_types = collection["item_types"]
+        self.collection_items = collection["collection_items"]
+
+
+
+
 
 
 
