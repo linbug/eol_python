@@ -130,9 +130,7 @@ class Collections(object):
     def __init__(self, id, page = 1, per_page = 50, filter = 'none', sort_by='recently_added', sort_field='', cache_ttl=''):
 
         attributes = [id,page,per_page,filter, sort_by, sort_field, cache_ttl]
-        print(attributes)
         url = ("http://eol.org/api/collections/1.0/{}.json?page={}&per_page={}&filter={}&sort_by={}&sort_field={}&cache_ttl={}".format(*attributes))
-        print(url)
         collection = API._get_url(url)
         self.name = collection["name"]
         self.description = collection["description"]
@@ -141,6 +139,26 @@ class Collections(object):
         self.total_items = collection["total_items"]
         self.item_types = collection["item_types"]
         self.collection_items = collection["collection_items"]
+
+class DataObjects(object):
+    '''Given the identifier for a data object this API will return all metadata about the object as submitted to EOL by the contributing content partner'''
+
+        def __init__(self, id, cache_ttl=''):
+            attributes = [id, cache_ttl]
+
+            url = "http://eol.org/api/data_objects/1.0/{}.json?cache_ttl={}".format(*attributes)
+            data_object = API._get_url(url)
+            self.identifier = id
+            self.scientific_name = data_object["scientificName"]
+            self.exemplar = data_object["exemplar"]
+            self.richness_score = data_object["richness_score"]
+            self.synonyms = data_object["synonyms"]
+            self.data_objects = data_object["dataObjects"]
+            self.references = data_object["references"]
+
+
+
+
 
 
 
