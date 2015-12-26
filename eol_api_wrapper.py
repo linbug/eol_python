@@ -6,6 +6,8 @@ from PIL import Image
 import os
 import pickle
 import re
+import math
+import time
 
 class API(object):
     '''Basic methods for searching API and pinging'''
@@ -19,7 +21,7 @@ class API(object):
         return page
 
     @staticmethod
-    def __bool_converter(string):
+    def _bool_converter(string):
         _bool_dict = {True: 'true', False:'false'}
         return _bool_dict[string]
 
@@ -58,12 +60,13 @@ class Page(object):
         url = (
             "http://eol.org/api/pages/1.0/{0}.json?images={1}&videos={2}&sounds={3}"
             "&maps={4}&text={5}&iucn={6}&subjects={7}&licenses={8}&details={9}&common_names={10}"
-            "&synonyms={11}&references={12}&vetted={13}&cache_ttl=".format(*attributes))
+            "&synonyms={11}&references={12}&vetted={13}&cache_ttl=".format(*attributes)
+            )
 
         page = API._get_url(url)
 
         self.scientific_name = page["scientificName"]
-        self.richness_score = 86.9941
+        self.richness_score = page["richness_score"]
         self.synonyms = page["synonyms"]
         self.common_names = page["vernacularNames"]
         self.references = page["references"]
@@ -76,12 +79,58 @@ class Search(object):
     def __init__(self, q, page = 1, exact = False, filter_by_taxon_concept_id = '', filter_by_hierarchy_entry_id = '',
         filter_by_string = '', cache_ttl = ''):
 
-        attributes = [q,page,exact,filter_by_taxon_concept_id]
+
+        attributes = [q,page,API._bool_converter(exact),filter_by_taxon_concept_id, filter_by_hierarchy_entry_id, filter_by_string,cache_ttl ]
         ##Do checks
 
+
         url = (
-            "http://eol.org/api/search/1.0.json?q=Ursus&page=1&exact=false&filter_by_taxon_concept_id="
-            "&filter_by_hierarchy_entry_id=&filter_by_string=&cache_ttl=".format()
-            )
+            "http://eol.org/api/search/1.0.json?q={0}&page={1}&exact={2}&filter_by_taxon_concept_id={3}"
+            "&filter_by_hierarchy_entry_id={4}&filter_by_string={5}&cache_ttl={6}".format(*attributes))
+
+        search = API._get_url(url)
+
+        self.q = q
+        self.total_results = search["totalResults"]
+        self.startIndex = search["startIndex"]
+        self.items_per_page = search["itemsPerPage"]
+
+        if page!= 'all':
+            print("getting just 30 items")
+            self.results = search["results"]
+            self.first = search["first"]
+            self.self = search["self"]
+            self.last = search["last"]
+            try:
+                self.next = search["next"]
+            except KeyError:
+                pass
+        else:
+            self.results = []
+            for page in range(1,math.ceil(self.total_results/30)+1):
+                print("pinging api")
+                attributes = [q,page,API._bool_converter(exact),filter_by_taxon_concept_id, filter_by_hierarchy_entry_id, filter_by_string,cache_ttl ]
+                url = (
+                "http://eol.org/api/search/1.0.json?q={0}&page={1}&exact={2}&filter_by_taxon_concept_id={3}"
+                "&filter_by_hierarchy_entry_id={4}&filter_by_string={5}&cache_ttl={6}".format(*attributes))
+
+                search = API._get_url(url)
+                # try:
+                self.results+=search["results"]
+                # self.previous = search["previous"]
+                self.first = search["first"]
+                # self.self = search["self"]
+                self.last = search["last"]
+                # except Exception:
+                #     print("You got an exception!"   )
+
+# class Collections(object):
+#     '''Returns all metadata about the collection and the items it contains'''
+
+#     def __init__()
+
+
+
+
 
 
