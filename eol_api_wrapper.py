@@ -1,13 +1,6 @@
 from urllib.request import urlopen
-from io import BytesIO
 import json
-import random
-from PIL import Image
-import os
-import pickle
-import re
 import math
-import time
 
 class API(object):
     '''Basic methods for searching API and pinging'''
