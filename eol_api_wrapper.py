@@ -41,7 +41,18 @@ class API(object):
                 synonyms = True, references = True, vetted = 0):
         return Page(id, images, videos, sounds, maps, text, iucn, subjects, licences, details, common_names, synonyms, references, vetted, self.key)
 
+    def Search(self, q, page = 1, exact = False, filter_by_taxon_concept_id = '', filter_by_hierarchy_entry_id = '',\
+                filter_by_string = '', cache_ttl = ''):
+        return Search(q, page, exact, filter_by_taxon_concept_id, filter_by_hierarchy_entry_id ,filter_by_string, cache_ttl, self.key)
 
+    def Collections(self, id, page = 1, per_page = 50, filter = 'none', sort_by='recently_added', sort_field='', cache_ttl=''):
+        return Collections(id,page,per_page,filter, sort_by, sort_field, cache_ttl, self.key)
+
+    def DataObjects(self, id, cache_ttl = ''):
+        return DataObjects(id, cache_ttl, self.key)
+
+    def Hierachy_entries(self,id, common_names = False, synonyms = False, cache_ttl=''):
+        return Hierachy_entries(id, common_names, synonyms, cache_ttl, self.key)
 
     def __repr__(self):
         return("SOMESTUFF")
@@ -62,11 +73,8 @@ class Page(object):
 
         ##Do a bunch of checks here to make sure the inputs are in the right format
 
-        # attributes = {"id":id, "images":images, "videos":videos, "sounds":sounds, "maps":maps, "text":text, "iucn":iucn_converter[iucn],\
-        #                  "subjects": subjects, "licences": licences, "details": details, "common_names": common_names, "synonyms": synonyms,\
-        #                   references, \
-        #                 vetted, format}
         self.id = id
+        self.key = key
 
         url = (
             "http://eol.org/api/pages/1.0/{0}.json?images={1}&videos={2}&sounds={3}"
@@ -75,7 +83,6 @@ class Page(object):
             )
 
         page = API._get_url(url)
-        print(url)
 
         self.scientific_name = page["scientificName"]
         self.richness_score = page["richness_score"]
@@ -89,16 +96,16 @@ class Search(object):
     '''Searches the EOL database with the string you supply'''
 
     def __init__(self, q, page = 1, exact = False, filter_by_taxon_concept_id = '', filter_by_hierarchy_entry_id = '',
-        filter_by_string = '', cache_ttl = ''):
+        filter_by_string = '', cache_ttl = '', key=''):
 
-
-        attributes = [q,page,API._bool_converter(exact),filter_by_taxon_concept_id, filter_by_hierarchy_entry_id, filter_by_string,cache_ttl ]
+        self.key = key
+        attributes = [q,page,API._bool_converter(exact),filter_by_taxon_concept_id, filter_by_hierarchy_entry_id, filter_by_string, cache_ttl, key]
         ##Do checks
 
 
         url = (
             "http://eol.org/api/search/1.0.json?q={0}&page={1}&exact={2}&filter_by_taxon_concept_id={3}"
-            "&filter_by_hierarchy_entry_id={4}&filter_by_string={5}&cache_ttl={6}".format(*attributes))
+            "&filter_by_hierarchy_entry_id={4}&filter_by_string={5}&cache_ttl={6}&key={7}".format(*attributes))
 
         search = API._get_url(url)
 
@@ -108,7 +115,7 @@ class Search(object):
         self.items_per_page = search["itemsPerPage"]
 
         if page!= 'all':
-            print("getting just 30 items")
+            print("Retrieving page {}".format(page))
             self.results = search["results"]
             self.first = search["first"]
             self.self = search["self"]
@@ -118,31 +125,29 @@ class Search(object):
             except KeyError:
                 pass
         else:
+            self.key = key
             self.results = []
-            for page in range(1,math.ceil(self.total_results/30)+1):
-                print("pinging page {}".format(page))
-                attributes = [q,page,API._bool_converter(exact),filter_by_taxon_concept_id, filter_by_hierarchy_entry_id, filter_by_string,cache_ttl ]
+            self.total_pages = math.ceil(self.total_results/30)
+            for page in range(1,self.total_pages+1):
+                print("Retrieving page {} of {}".format(page,self.total_pages))
+                attributes = [q,page,API._bool_converter(exact),filter_by_taxon_concept_id, filter_by_hierarchy_entry_id, filter_by_string,cache_ttl,key ]
                 url = (
                 "http://eol.org/api/search/1.0.json?q={0}&page={1}&exact={2}&filter_by_taxon_concept_id={3}"
-                "&filter_by_hierarchy_entry_id={4}&filter_by_string={5}&cache_ttl={6}".format(*attributes))
-
+                "&filter_by_hierarchy_entry_id={4}&filter_by_string={5}&cache_ttl={6}&key={7}".format(*attributes))
                 search = API._get_url(url)
-                # try:
                 self.results+=search["results"]
-                # self.previous = search["previous"]
                 self.first = search["first"]
-                # self.self = search["self"]
                 self.last = search["last"]
-                # except Exception:
-                #     print("You got an exception!"   )
+
 
 class Collections(object):
     '''Returns all metadata about the collection and the items it contains'''
 
-    def __init__(self, id, page = 1, per_page = 50, filter = 'none', sort_by='recently_added', sort_field='', cache_ttl=''):
+    def __init__(self, id, page = 1, per_page = 50, filter = 'none', sort_by='recently_added', sort_field='', cache_ttl='', key = ''):
 
-        attributes = [id,page,per_page,filter, sort_by, sort_field, cache_ttl]
-        url = ("http://eol.org/api/collections/1.0/{}.json?page={}&per_page={}&filter={}&sort_by={}&sort_field={}&cache_ttl={}".format(*attributes))
+        attributes = [id,page,per_page,filter, sort_by, sort_field, cache_ttl, key]
+        self.key = key
+        url = ("http://eol.org/api/collections/1.0/{}.json?page={}&per_page={}&filter={}&sort_by={}&sort_field={}&cache_ttl={}&key={}".format(*attributes))
         collection = API._get_url(url)
         self.name = collection["name"]
         self.description = collection["description"]
@@ -155,10 +160,10 @@ class Collections(object):
 class DataObjects(object):
     '''Given the identifier for a data object this API will return all metadata about the object as submitted to EOL by the contributing content partner'''
 
-    def __init__(self, id, cache_ttl=''):
-        attributes = [id, cache_ttl]
-
-        url = "http://eol.org/api/data_objects/1.0/{}.json?cache_ttl={}".format(*attributes)
+    def __init__(self, id, cache_ttl = '', key = ''):
+        attributes = [id, cache_ttl, key]
+        self.key = key
+        url = "http://eol.org/api/data_objects/1.0/{}.json?cache_ttl={}&key={}".format(*attributes)
         data_object = API._get_url(url)
         self.identifier = id
         self.scientific_name = data_object["scientificName"]
@@ -168,23 +173,23 @@ class DataObjects(object):
         self.data_objects = data_object["dataObjects"]
         self.references = data_object["references"]
 
-class Heirachy_entries(object):
+class Hierachy_entries(object):
 
-    def __init__(self,id, common_names = True, synonyms = True, cache_ttl=''):
-        attributes = [id, API._bool_converter(common_names), API._bool_converter(synonyms), cache_ttl]
-        url = "http://eol.org/api/hierarchy_entries/1.0/{}.json?common_names={}&synonyms={}&cache_ttl={}".format(*attributes)
-        heirachy = API._get_url(url)
-
+    def __init__(self,id, common_names = False, synonyms = False, cache_ttl='', key = ''):
+        attributes = [id, API._bool_converter(common_names), API._bool_converter(synonyms), cache_ttl, key]
+        url = "http://eol.org/api/hierarchy_entries/1.0/{}.json?common_names={}&synonyms={}&cache_ttl={}&key={}".format(*attributes)
+        hierachy = API._get_url(url)
+        self.key = key
         self.id = id
-        self.source_identifier = heirachy["sourceIdentifier"]
-        self.taxon_id = heirachy["taxonID"]
-        self.parent_name_usage_id = heirachy["parentNameUsageID"]
-        self.taxon_concept_id = heirachy["taxonConceptID"]
-        self.scientific_name = heirachy["scientificName"]
-        self.taxon_rank = heirachy["taxonRank"]
-        self.source = heirachy["source"]
-        self.name_according_to = heirachy["nameAccordingTo"]
-        self.vernacularNames = heirachy["vernacularNames"]
+        self.source_identifier = hierachy["sourceIdentifier"]
+        self.taxon_id = hierachy["taxonID"]
+        self.parent_name_usage_id = hierachy["parentNameUsageID"]
+        self.taxon_concept_id = hierachy["taxonConceptID"]
+        self.scientific_name = hierachy["scientificName"]
+        self.taxon_rank = hierachy["taxonRank"]
+        self.source = hierachy["source"]
+        self.name_according_to = hierachy["nameAccordingTo"]
+        self.vernacularNames = hierachy["vernacularNames"]
 
 
 
