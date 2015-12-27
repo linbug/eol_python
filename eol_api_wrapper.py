@@ -32,6 +32,7 @@ class API(object):
         ping = API._get_url(url)
         return ping['response']['message']
 
+
     def __repr__(self):
         return("SOMESTUFF")
 
@@ -143,18 +144,38 @@ class Collections(object):
 class DataObjects(object):
     '''Given the identifier for a data object this API will return all metadata about the object as submitted to EOL by the contributing content partner'''
 
-        def __init__(self, id, cache_ttl=''):
-            attributes = [id, cache_ttl]
+    def __init__(self, id, cache_ttl=''):
+        attributes = [id, cache_ttl]
 
-            url = "http://eol.org/api/data_objects/1.0/{}.json?cache_ttl={}".format(*attributes)
-            data_object = API._get_url(url)
-            self.identifier = id
-            self.scientific_name = data_object["scientificName"]
-            self.exemplar = data_object["exemplar"]
-            self.richness_score = data_object["richness_score"]
-            self.synonyms = data_object["synonyms"]
-            self.data_objects = data_object["dataObjects"]
-            self.references = data_object["references"]
+        url = "http://eol.org/api/data_objects/1.0/{}.json?cache_ttl={}".format(*attributes)
+        data_object = API._get_url(url)
+        self.identifier = id
+        self.scientific_name = data_object["scientificName"]
+        self.exemplar = data_object["exemplar"]
+        self.richness_score = data_object["richness_score"]
+        self.synonyms = data_object["synonyms"]
+        self.data_objects = data_object["dataObjects"]
+        self.references = data_object["references"]
+
+class Heirachy_entries(object):
+
+    def __init__(self,id, common_names = True, synonyms = True, cache_ttl):
+        attributes = [id, API._bool_converter(common_names), API._bool_converter(synonyms), cache_ttl]
+        url = "http://eol.org/api/hierarchy_entries/1.0/{}.json?common_names={}&synonyms={}&cache_ttl={}".format(*attributes)
+        heirachy = API._get_url(url)
+
+        self.id = id
+        self.source_identifier = heirachy["sourceIdentifier"]
+        self.taxon_id = heirachy["taxonID"]
+        self.parent_name_usage_id = heirachy["parentNameUsageID"]
+        self.taxon_concept_id = heirachy["taxonConceptID"]
+        self.scientific_name = heirachy["scientificName"]
+        self.taxon_rank = heirachy["taxonRank"]
+        self.source = heirachy["source"]
+        self.name_according_to = heirachy["nameAccordingTo"]
+        self.vernacularNames = heirachy["vernacularNames"]
+
+
 
 
 
