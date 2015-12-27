@@ -12,6 +12,9 @@ import time
 class API(object):
     '''Basic methods for searching API and pinging'''
 
+    def __init__(self,key=''):
+        self.key = key
+
     @staticmethod
     def _get_url(url):
         '''get json page data using a specified eol API url'''
@@ -32,6 +35,13 @@ class API(object):
         ping = API._get_url(url)
         return ping['response']['message']
 
+    def Page(self, id, images = 2, videos = 0, sounds = 0, \
+                maps = 0, text = 2, iucn = False, subjects = 'overview', \
+                licences = 'all', details = True, common_names = True, \
+                synonyms = True, references = True, vetted = 0):
+        return Page(id, images, videos, sounds, maps, text, iucn, subjects, licences, details, common_names, synonyms, references, vetted, self.key)
+
+
 
     def __repr__(self):
         return("SOMESTUFF")
@@ -43,12 +53,12 @@ class Page(object):
     def __init__(self, id, images = 2, videos = 0, sounds = 0, \
                 maps = 0, text = 2, iucn = False, subjects = 'overview', \
                 licences = 'all', details = True, common_names = True, \
-                synonyms = True, references = True, vetted = 0):
+                synonyms = True, references = True, vetted = 0, key=''):
 
 
         attributes = [id, images, videos, sounds, maps, text, API._bool_converter(iucn),\
-                         subjects, licences, _bool_converter[details], API._bool_converter(common_names), API._bool_converter(synonyms),\
-                          API._bool_converter(references), vetted]
+                         subjects, licences, API._bool_converter(details), API._bool_converter(common_names), API._bool_converter(synonyms),\
+                          API._bool_converter(references), vetted, key]
 
         ##Do a bunch of checks here to make sure the inputs are in the right format
 
@@ -61,10 +71,11 @@ class Page(object):
         url = (
             "http://eol.org/api/pages/1.0/{0}.json?images={1}&videos={2}&sounds={3}"
             "&maps={4}&text={5}&iucn={6}&subjects={7}&licenses={8}&details={9}&common_names={10}"
-            "&synonyms={11}&references={12}&vetted={13}&cache_ttl=".format(*attributes)
+            "&synonyms={11}&references={12}&vetted={13}&cache_ttl=&key={14}".format(*attributes)
             )
 
         page = API._get_url(url)
+        print(url)
 
         self.scientific_name = page["scientificName"]
         self.richness_score = page["richness_score"]
@@ -159,7 +170,7 @@ class DataObjects(object):
 
 class Heirachy_entries(object):
 
-    def __init__(self,id, common_names = True, synonyms = True, cache_ttl):
+    def __init__(self,id, common_names = True, synonyms = True, cache_ttl=''):
         attributes = [id, API._bool_converter(common_names), API._bool_converter(synonyms), cache_ttl]
         url = "http://eol.org/api/hierarchy_entries/1.0/{}.json?common_names={}&synonyms={}&cache_ttl={}".format(*attributes)
         heirachy = API._get_url(url)
