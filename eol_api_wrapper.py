@@ -48,7 +48,10 @@ class API(object):
         return Hierachy_entries(id, common_names, synonyms, cache_ttl, self.key)
 
     def __repr__(self):
-        return("SOMESTUFF")
+        return '<%s (key = %s)>' % (
+    self.__class__.__name__, self.key
+    )
+        # return("EOL API(key = {})".format(self.key))
 
 class Page(object):
     '''Takes an EOL identifier and returns a dictionary of information about that page.
