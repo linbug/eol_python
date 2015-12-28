@@ -30,7 +30,7 @@ You now have access to the EOL API methods `Page`, `Search`, `Collections`, `Dat
 #'Apis mellifera Linnaeus 1758'
 ```
 
-Specific method arguments can be adjusted using `**kwargs`.
+Each method returns a JSON object. Specific method arguments can be adjusted using `**kwargs`.
 
 The `Search` method comes with an added optional `"all"` argument that returns all the pages for a particular search string.
 
