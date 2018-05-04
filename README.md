@@ -1,14 +1,14 @@
 # eol_python
 A Python 3 wrapper for the [Encyclopedia of Life API](http://eol.org/api).
 
-##Installation
+## Installation
 Clone this repo and import eol_api_wrapper.py as a module:
 
  ```python 
  >>> import eol_api_wrapper as eol
  ```
 
-##Usage
+## Usage
 To start accessing the API, first instantiate an instance of the API class. If you intend to make a lot of calls to the API, generate an API key as described [here](http://eol.org/info/api_overview) and add as an argument:
 
 ```python
