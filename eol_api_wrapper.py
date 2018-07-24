@@ -199,7 +199,7 @@ class Search(object):
 
         if not isinstance(page, int) and page!='all':
             raise ValueError('Not a valid page number')
-
+        q = q.replace(' ', '+')  # prep search strings for the url syntax.
         attributes = [q,page,API._bool_converter(exact),filter_by_taxon_concept_id, filter_by_hierarchy_entry_id, filter_by_string, cache_ttl, key]
 
         url = (
